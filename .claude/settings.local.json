@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(cargo check:*)",
+      "Bash(cargo build:*)",
+      "Bash(DATABASE_URL=\"sqlite:C:/code/Rust/realm_chat/realm_chat.db\" JWT_SECRET=devsecret cargo run:*)",
+      "Bash(DATABASE_URL=\"sqlite:realm_chat.db\" JWT_SECRET=devsecret cargo run:*)",
+      "Bash(SERVER_URL=http://localhost:8080 cargo run:*)"
+    ]
+  }
+}
