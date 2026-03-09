@@ -524,6 +524,7 @@ impl RealmChatApp {
         egui::SidePanel::left("locations_panel")
             .resizable(true)
             .default_width(200.0)
+            .max_width(300.0)
             .frame(egui::Frame::default().fill(BG_MID))
             .show(ctx, |ui| {
                 if let Some(wid) = self.chat.selected_world {
@@ -577,14 +578,16 @@ impl RealmChatApp {
         egui::SidePanel::left("friends_panel")
             .resizable(true)
             .default_width(200.0)
+            .max_width(300.0)
             .frame(egui::Frame::default().fill(BG_MID))
             .show(ctx, |ui| {
                 ui.add_space(8.0);
                 ui.label(RichText::new("FRIENDS").small().strong().color(TEXT_MUTED));
                 ui.add_space(4.0);
 
+                let input_width = ui.available_width() - 36.0;
                 ui.horizontal(|ui| {
-                    let w = ui.available_width() - 36.0;
+                    let w = input_width;
                     ui.add(
                         egui::TextEdit::singleline(&mut self.friends.add_friend_input)
                             .desired_width(w)
