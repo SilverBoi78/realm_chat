@@ -94,7 +94,12 @@ async fn accept_request(
         .await?
         .ok_or_else(|| AppError(StatusCode::NOT_FOUND, "Request not found".into()))?;
 
-    Ok(Json(friendship_to_model(row)?))
+    let model = friendship_to_model(row)?;
+
+    let requester_id: Uuid = model.requester_id;
+    state.hub.notify_user(requester_id, common::WsMessage::FriendRequestReceived(model.clone()));
+
+    Ok(Json(model))
 }
 
 async fn remove_friend(

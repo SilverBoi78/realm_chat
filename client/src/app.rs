@@ -318,8 +318,20 @@ impl RealmChatApp {
             let new_frs = ws.drain_friend_requests();
             if !new_frs.is_empty() {
                 for req in new_frs {
-                    self.friends.unread_requests += 1;
-                    self.friends.pending_incoming.push(req);
+                    if req.status == common::models::FriendStatus::Accepted {
+                        self.friends.pending_outgoing.retain(|r| r.id != req.id);
+                        let (peer_id, peer_name) = if Some(req.requester_id) == self.auth.user_id {
+                            (req.addressee_id, req.addressee_name.clone())
+                        } else {
+                            (req.requester_id, req.requester_name.clone())
+                        };
+                        if !self.friends.friends.iter().any(|f| f.user_id == peer_id) {
+                            self.friends.friends.push(FriendEntry { user_id: peer_id, username: peer_name });
+                        }
+                    } else {
+                        self.friends.unread_requests += 1;
+                        self.friends.pending_incoming.push(req);
+                    }
                 }
                 ctx.request_repaint();
             }
@@ -672,10 +684,11 @@ impl RealmChatApp {
                 });
 
             ui.separator();
+            let compose_width = ui.available_width() - 80.0;
             ui.horizontal(|ui| {
                 let resp = ui.add(
                     egui::TextEdit::singleline(&mut self.chat.compose_text)
-                        .desired_width(ui.available_width() - 80.0)
+                        .desired_width(compose_width)
                         .hint_text(format!("Message #{}", loc_name)),
                 );
                 let send_clicked = ui.add(egui::Button::new("Send").fill(ACCENT).min_size(egui::vec2(70.0, 28.0))).clicked();
@@ -695,9 +708,7 @@ impl RealmChatApp {
         if let Some(peer_id) = self.friends.active_dm_peer {
             let peer_name = self.friends.peer_username(peer_id).to_owned();
 
-            ui.horizontal(|ui| {
-                ui.label(RichText::new(format!("@ {}", peer_name)).strong().color(Color32::WHITE));
-            });
+            ui.label(RichText::new(format!("@ {}", peer_name)).strong().color(Color32::WHITE));
             ui.separator();
 
             let available = ui.available_height() - 60.0;
@@ -717,10 +728,11 @@ impl RealmChatApp {
                 });
 
             ui.separator();
+            let compose_width = ui.available_width() - 80.0;
             ui.horizontal(|ui| {
                 let resp = ui.add(
                     egui::TextEdit::singleline(&mut self.friends.dm_compose)
-                        .desired_width(ui.available_width() - 80.0)
+                        .desired_width(compose_width)
                         .hint_text(format!("Message @{}", peer_name)),
                 );
                 let send_clicked = ui.add(egui::Button::new("Send").fill(ACCENT).min_size(egui::vec2(70.0, 28.0))).clicked();
